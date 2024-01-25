@@ -18,42 +18,45 @@ namespace QuickKart_DataAccessLayer
         public SqlConnection conObj;
         public SqlCommand cmdObj;
         private readonly ILogger<CustomerRepository> logger;
+        private readonly string storageUri;
 
         public CustomerRepository(ILogger<CustomerRepository> _logger)
         {
             logger = _logger;
-            conObj = new SqlConnection(GetConnectionString());
+            conObj = new SqlConnection(GetConnectionString("DBConnectionString"));
+            storageUri = GetConnectionString("StorageUri");
+            logger.LogInformation($"KeyVault: {GetConnectionStringFromKeyVault()}");
         }
 
 
 
-        public string GetConnectionString()
+        public string GetConnectionString(string name)
         {
             var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
             var config = builder.Build();
-            var connectionString = config.GetConnectionString("DBConnectionString");
+            var connectionString = config.GetConnectionString(name);
 
-            logger.LogInformation(connectionString);
+            // logger.LogInformation(connectionString);
 
             //   System.IO.File.AppendAllText(@"E:\stepTrack.txt", Directory.GetCurrentDirectory());
             return connectionString;
 
         }
 
-        //public string GetConnectionStringFromKeyVault()
-        //{
-        //    string tenantID = "";
-        //    string clientID = "";
-        //    string clientSecret = "";
-        //    string KeyVaultUrl = "";
-        //    ClientSecretCredential clientCredentials = new ClientSecretCredential(tenantID, clientID, clientSecret);
-        //    SecretClient secretClient = new SecretClient(new Uri(KeyVaultUrl), clientCredentials);
+        public string GetConnectionStringFromKeyVault()
+        {
+            string tenantID = "23bd226c-01e2-4de3-969b-c939d40fe877";
+            string clientID = "bf59e962-717c-45a9-843f-cd29f7d334d8";
+            string clientSecret = "CJw8Q~SEncgqQsBXM2Uz1SvtgiV2anGtDY~FybWl";
+            string KeyVaultUrl = "https://keyvault34x.vault.azure.net/";
+            ClientSecretCredential clientCredentials = new ClientSecretCredential(tenantID, clientID, clientSecret);
+            SecretClient secretClient = new SecretClient(new Uri(KeyVaultUrl), clientCredentials);
 
-        //    var secret = secretClient.GetSecret("");
+            var secret = secretClient.GetSecret("SqlConnectionString");
 
-        //    return secret.Value.Value;
+            return secret.Value.Value;
 
-        //}
+        }
 
         //ADO.net
         public List<Product> GetProductsFromDatabase()
@@ -73,9 +76,9 @@ namespace QuickKart_DataAccessLayer
                     ProductPrice = Convert.ToDouble(x["ProductPrice"]),
                     Vendor = Convert.ToString(x["Vendor"]),
                     Discount = Convert.ToDouble(x["Discount"]),
-                    ProductImage = Convert.ToString(x["ProductImage"]),
+                    ProductImage = storageUri + "products/" + Convert.ToString(x["ProductImage"]),
                 })).ToList();
-
+                
                 logger.LogInformation("Successfully fetched the products from DB");
 
             }
@@ -84,8 +87,6 @@ namespace QuickKart_DataAccessLayer
 
                 lstProduct = null;
                 logger.LogInformation("Failed in fetching the products "+e.Message);
-
-
             }
             finally
             {
@@ -98,35 +99,35 @@ namespace QuickKart_DataAccessLayer
 
         public bool AddSubscriberDAL(string emailID)
         {
-             bool result = false;
-                cmdObj = new SqlCommand("usp_AddSubscriber", conObj);
-                cmdObj.CommandType = CommandType.StoredProcedure;
+            bool result = false;
+            cmdObj = new SqlCommand("usp_AddSubscriber", conObj);
+            cmdObj.CommandType = CommandType.StoredProcedure;
             SqlParameter prmEmailID = new SqlParameter("@emailID", emailID);
             prmEmailID.Direction = ParameterDirection.Input;
             cmdObj.Parameters.Add(prmEmailID);
 
-                try
-                {
-                    SqlParameter prmReturnValue = new SqlParameter();
-                    prmReturnValue.Direction = ParameterDirection.ReturnValue;
-                    cmdObj.Parameters.Add(prmReturnValue);
-                    conObj.Open();
-                    cmdObj.ExecuteNonQuery();
-                    int res = Convert.ToInt32(prmReturnValue.Value);
-                    if (res == 1)
-                        result = true;//it means added
-                    else
-                        result = false;//error
-                }
-                catch (Exception e)
-                {
-                    result = false;
+            try
+            {
+                SqlParameter prmReturnValue = new SqlParameter();
+                prmReturnValue.Direction = ParameterDirection.ReturnValue;
+                cmdObj.Parameters.Add(prmReturnValue);
+                conObj.Open();
+                cmdObj.ExecuteNonQuery();
+                int res = Convert.ToInt32(prmReturnValue.Value);
+                if (res == 1)
+                    result = true;//it means added
+                else
+                    result = false;//error
+            }
+            catch (Exception e)
+            {
+                result = false;
                     
-                }
-                finally
-                {
-                    conObj.Close();
-                }
+            }
+            finally
+            {
+                conObj.Close();
+            }
             return result;
 
         }

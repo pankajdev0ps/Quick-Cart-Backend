@@ -55,7 +55,7 @@ end
 
 
 declare @res int
-exec @res=usp_AddSubscriber 'siddharthd1@cloudthat.com'
+exec @res=usp_AddSubscriber 'user1@cloudthat.com'
 select @res
 
 Go 
@@ -75,7 +75,7 @@ Pincode   numeric(6),
 userType char(1)
 )
 
-insert into Customers values('siddharthd@cloudthat.com','Siddharth','Dwivedi',231216,'Kmail@1234','c')
+insert into Customers values('customer1@cloudthat.com','Aplha','User',231216,'cust@1234','c')
 -----------------------------------------------------------------------------------------------
 
 create table Vendors
@@ -96,7 +96,7 @@ insert into vendors values('Oneplus','Oneplus@quickcart.com','Kmail@1234')
 GO
 
 --This function will perform login validation
-alter function ufn_ValidateLogin
+create function ufn_ValidateLogin
 ( 
 @userEmailID varchar(50),
 @userPassword varchar(50),
@@ -122,10 +122,6 @@ end
 
 GO
 
-select [dbo].ufn_ValidateLogin('siddharthd@cloudthat.com','Kmail@1234','c')
+select [dbo].ufn_ValidateLogin('customer1@cloudthat.com','cust@1234','c')
 
 go
-
-
-
-
