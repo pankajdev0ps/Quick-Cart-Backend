@@ -1,0 +1,32 @@
+
+
+trigger:
+- master
+
+pool:
+  name: 'quickkart-pool'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs: 
+    command: build
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+   command: publish
+   publishwebprojects: True
+   arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+   zipAfterPublish: True
+
+- task: PublishPipelineArtifact@1
+  inputs: 
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'sql-artifact'
