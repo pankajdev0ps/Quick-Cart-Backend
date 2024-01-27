@@ -122,7 +122,6 @@ namespace QuickKart_DataAccessLayer
             catch (Exception e)
             {
                 result = false;
-                    
             }
             finally
             {

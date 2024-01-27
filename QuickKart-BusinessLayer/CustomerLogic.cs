@@ -14,6 +14,7 @@ namespace QuickKart_BusinessLayer
 
         public CustomerLogic(ILogger<CustomerRepository> _logger)
         {
+            logger = _logger;
             cust_repository = new CustomerRepository(_logger);
 
         }

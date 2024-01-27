@@ -3,16 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.SqlServer.Server;
 using QuickKart_DataAccessLayer;
 using QuickKart_DataAccessLayer.Models;
 using System;
-using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using static Azure.Core.HttpHeader;
 
 namespace QuickKartWebService.Controllers
@@ -21,11 +16,14 @@ namespace QuickKartWebService.Controllers
     [ApiController]
     public class AdminController : Controller
     {
-        private readonly ILogger<AdminController> logger;
+        private readonly ILogger<AdminRepository> logger;
 
-        public AdminController(ILogger<AdminController> _logger)
+        private AdminRepository admin_repository;
+
+        public AdminController(ILogger<AdminRepository> _logger)
         {
             logger = _logger;
+            admin_repository = new AdminRepository(logger);
         }
 
         [HttpPost, DisableRequestSizeLimit]
@@ -80,7 +78,7 @@ namespace QuickKartWebService.Controllers
                     
                     logger.LogInformation($"{url}");
 
-                    if(this.AddProduct(product) == 0)
+                    if(admin_repository.AddProduct(product) == 0)
                     {
                         return BadRequest();
                     }
@@ -104,41 +102,6 @@ namespace QuickKartWebService.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex}");
             }
-        }
-
-        private int AddProduct(Product p)
-        {
-            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
-            var config = builder.Build();
-            var connectionString = config.GetConnectionString("DBConnectionString");
-            
-            SqlConnection sqlConnection = new SqlConnection(connectionString);
-            SqlCommand sqlCommand = new SqlCommand();
-
-            string cmdString = "INSERT INTO product VALUES (@val1, @val2, @val3, @val4, @val5)";
-            
-            sqlCommand.Connection = sqlConnection;
-            sqlCommand.CommandText = cmdString;
-            sqlCommand.Parameters.AddWithValue("@val1", p.ProductName);
-            sqlCommand.Parameters.AddWithValue("@val2", p.ProductPrice);
-            sqlCommand.Parameters.AddWithValue("@val3", "TMC India");
-            sqlCommand.Parameters.AddWithValue("@val4", p.Discount);
-            sqlCommand.Parameters.AddWithValue("@val5", p.ProductImage);
-
-            try
-            {
-                sqlConnection.Open();
-                sqlCommand.ExecuteNonQuery();
-            }
-            catch(SqlException ex)
-            {
-                logger.LogInformation($"SQl Error:{ex.Message}");
-                return 0;
-            }
-            finally { sqlConnection.Close(); }
-
-            // other codes.
-            return 1;
         }
 
     }

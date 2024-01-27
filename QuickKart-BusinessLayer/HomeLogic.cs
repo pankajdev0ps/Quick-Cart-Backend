@@ -11,8 +11,6 @@ namespace QuickKart_BusinessLayer
         private readonly ILogger<CustomerRepository> logger;
         private CustomerRepository cust_repository;
 
-
-
         public HomeLogic(ILogger<CustomerRepository> _logger)
         {
             logger= _logger;
@@ -34,7 +32,6 @@ namespace QuickKart_BusinessLayer
             return productLst;
 
         }
-
 
     }
 }
