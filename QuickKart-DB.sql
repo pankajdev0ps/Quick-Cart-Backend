@@ -125,3 +125,81 @@ GO
 select [dbo].ufn_ValidateLogin('customer1@cloudthat.com','cust@1234','c')
 
 go
+
+
+----------------------------------------------------------------
+
+update Product set ProductImage = 'TV.jpg' where ProductID = 2
+
+select * from Product
+
+drop table orders
+
+create table orders
+(
+orderid int identity(1,1) primary key,
+custEmail varchar(50) references Customers(emailID),
+prodID int,
+prodCost int,
+orderdate dateTime default getDate()
+)
+
+
+Select * from orders
+Select * from Customers
+select * from [dbo].[Vendors]
+select * from [dbo].[Customers]
+
+INSERT into Customers VALUES('pankaj.dev0ps@outlook.com', 'Pankaj', 'Choudhary', 412105, 'cust@1234', 'c')
+
+
+create proc usp_AddOrder
+(
+    @custEmail varchar(50),
+    @prodId int,
+    @prodCost int,
+    @orderDate datetime
+)
+as
+begin
+	begin try	
+		insert into orders values (@custEmail, @prodId, @prodCost, @orderDate)
+		return 1
+	end try
+	begin catch
+		return 0
+	end catch
+end
+
+
+
+select schema_name(t.schema_id) as schema_name,
+       t.name as table_name,
+       t.create_date,
+       t.modify_date
+from sys.tables t
+order by schema_name,
+         table_name;
+
+
+
+
+select schema_name(obj.schema_id) as schema_name,
+       obj.name as procedure_name,
+       case type
+            when 'P' then 'SQL Stored Procedure'
+            when 'X' then 'Extended stored procedure'
+        end as type,
+        substring(par.parameters, 0, len(par.parameters)) as parameters,
+        mod.definition
+from sys.objects obj
+join sys.sql_modules mod
+     on mod.object_id = obj.object_id
+cross apply (select p.name + ' ' + TYPE_NAME(p.user_type_id) + ', ' 
+             from sys.parameters p
+             where p.object_id = obj.object_id 
+                   and p.parameter_id != 0 
+             for xml path ('') ) par (parameters)
+where obj.type in ('P', 'X')
+order by schema_name,
+         procedure_name;

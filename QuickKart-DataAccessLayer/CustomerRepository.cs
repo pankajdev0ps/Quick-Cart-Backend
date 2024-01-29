@@ -84,7 +84,6 @@ namespace QuickKart_DataAccessLayer
             }
             catch (Exception e)
             {
-
                 lstProduct = null;
                 logger.LogInformation("Failed in fetching the products "+e.Message);
             }
@@ -122,6 +121,7 @@ namespace QuickKart_DataAccessLayer
             catch (Exception e)
             {
                 result = false;
+                logger.LogInformation("Exception "+e.Message);
             }
             finally
             {
